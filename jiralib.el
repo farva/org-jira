@@ -134,6 +134,7 @@ This is maintained by `jiralib-login'.")
 
 (defun jiralib-load-wsdl ()
   "Load the JIRA WSDL descriptor."
+  (message "Before soap-load-wsdl-from-url...")
   (setq jiralib-wsdl (soap-load-wsdl-from-url (if (string-equal jiralib-wsdl-descriptor-url "")
 						(concat jiralib-url "/rpc/soap/jirasoapservice-v2?wsdl")
 					      jiralib-wsdl-descriptor-url))))
@@ -163,8 +164,10 @@ This is maintained by `jiralib-login'.")
 		     (funcall sec)
 		   sec)))
 	 (list user secret)))))
-  (unless jiralib-wsdl 
-    (jiralib-load-wsdl))
+  (unless jiralib-wsdl
+    (message "Before jiralib-load-wsdl...")
+    (jiralib-load-wsdl)
+    (message "After jiralib-load-wsdl"))
   (setq jiralib-token 
         (car (soap-invoke jiralib-wsdl "jirasoapservice-v2" "login" username password)))
   (setq jiralib-user-login-name username)

@@ -74,6 +74,10 @@ All the other properties are optional. They over-ride the global variables.
   :group 'org-jira
   :type '(alist :value-type plist))
 
+(defcustom org-jira-backend nil
+  "Which beckend to serve for requests (REST/SOAP/...)")
+
+(setq org-jira-backend "jira-rest")
 
 (defvar org-jira-serv nil
   "Parameters of the currently selected blog.")
@@ -227,7 +231,7 @@ Entry to this mode calls the value of `org-jira-mode-hook'."
         (find-file projects-file))
     (org-jira-mode t)
     (save-excursion
-      (let* ((oj-projs (jiralib-get-projects)))
+      (let* ((oj-projs (funcall (intern-soft (concat org-jira-backend "-get-projects")))))
         (mapc (lambda (proj)
                 (let* ((proj-key (cdr (assoc 'key proj)))
                        (proj-headline (format "Project: [[file:%s.org][%s]]" proj-key proj-key)))
@@ -250,7 +254,7 @@ Entry to this mode calls the value of `org-jira-mode-hook'."
                       (org-narrow-to-subtree))
                     (org-entry-put (point) "name" (cdr (assoc 'name proj)))
                     (org-entry-put (point) "key" (cdr (assoc 'key proj)))
-                    (org-entry-put (point) "lead" (cdr (assoc 'lead proj)))
+                    (org-entry-put (point) "lead" (cdr (assoc 'displayName (cdr (assoc 'lead proj)))))
                     (org-entry-put (point) "ID" (cdr (assoc 'id proj)))
                     (org-entry-put (point) "url" (cdr (assoc 'url proj))))))
               oj-projs)))))
@@ -311,7 +315,7 @@ prefix argument you are given the chance to enter your own jql."
                                "assignee = currentUser() and resolution = unresolved")
                              'org-jira-jql-history
                              "assignee = currentUser() and resolution = unresolved")))
-    (list (jiralib-do-jql-search jql))))
+    (list (jira-rest-do-jql-search jql))))
 
 ;;;###autoload
 (defun org-jira-get-issues-headonly (issues)
